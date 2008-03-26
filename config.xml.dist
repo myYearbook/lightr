@@ -1,0 +1,12 @@
+<configuration>
+  <storage>
+    <memcached>
+      <!--
+        Configuration of these should be in format:
+        <server>host:port:persistent:weight</server>
+       -->
+      <server>192.168.1.101:11211:1:7</server>
+      <server>192.168.1.102:11211:1:7</server>
+    </memcached>
+  </storage>
+</configuration>
