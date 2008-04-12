@@ -75,7 +75,7 @@ class XMPPRosterItem extends XMPPStanzaObject
     $name = (string) ( ($sxmlItem['name'] ) ? ( $sxmlItem['name'] ) : ( $jid->node ) );
     // Set their subscription type
     $subscription = (string) $sxmlItem['subscription'];
-      
+
     $sxmlGroups = $sxmlItem->group;
 
     foreach ( $sxmlGroups as $group )
@@ -101,10 +101,12 @@ class XMPPRosterItem extends XMPPStanzaObject
       $jid = XMPPJID::getByString( $jid );
     }
     
+    $jid = new XMPPJID();
+    
     $this->jid = $jid;
     $this->name = ( $name ) ? ( $name ) : ( $jid->node );
     $this->subscription = $subscription;
-    $this->groups = $groups;
+    $this->groups = (array)$groups;
 
     // Set their protocol
     list( $this->protocol, $nothing ) = explode( '.', $this->jid->domain, 2 );

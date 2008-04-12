@@ -28,12 +28,34 @@ class XMPPMessage extends XMPPStanzaObject
    * @var string
    */
   public $body;
+  /**
+   * The past tense of read, read. Has this message been read?
+   *
+   * @var boolean
+   */
+  private $read = false;
 
+  /**
+   * Build an XMPPMessage by SimpleXMLElement node and return it
+   *
+   * @param SimpleXMLElement $sxmlMessage
+   * @return XMPPMessage
+   */
   static function buildBySimpleXML ( $sxmlMessage )
   {
     $return = new XMPPMessage( (string) $sxmlMessage['from'], (string) $sxmlMessage['to'], (string) $sxmlMessage['type'], (string) $sxmlMessage->body );
     return $return;
   }  
+  
+  /**
+   * Set whether or not this message has been read. Defaults to false
+   *
+   * @param boolean $read
+   */
+  function setIsRead( $read = true )
+  {
+    $this->read = $read;
+  }
   
   function __construct( $from = null, $to = null, $type = null, $body = null )
   {

@@ -14,14 +14,14 @@ class MUCPresenceHandler extends XMPPHandlerObject
    *
    * @var string
    */
-  public $xpath = '/presence/x[@xmlns="http://jabber.org/protocol/muc#user"]/..';
+  public $xpath = array( '/presence/x[@xmlns="http://jabber.org/protocol/muc#user"]/..' );
   
   /**
    * Process a node
    *
    * @param SimpleXMLElement $node
    */
-  public function process( $node, $owner )
+  public function process( SimpleXMLElement $node )
   {
     $this->owner->debug( 'MUC Presence', print_r( $node, true ) );
   }

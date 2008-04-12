@@ -28,6 +28,13 @@ abstract class BOSHClient
   protected $bodyElement;
 
   /**
+   * The BOSH URL to connect to for HTTP requests
+   *
+   * @var string
+   */
+  protected $boshURL = '';
+  
+  /**
    * Session id for this connection
    *
    * @var string
@@ -102,21 +109,15 @@ abstract class BOSHClient
    *
    * @var bool
    */
-  private $connected = false;
-  
-  protected static $boshHost = 'bosh.jabber.org';
-  protected static $boshPort = 8080;
-  protected static $boshURI = '/http-bind/';
-  
-  static protected $debuggers = array();
+  protected $connected = false;
   
   /**
-   * Storage Handler for BOSHClient and extending objects
+   * List of debugger objects to debug with
    *
-   * @var StorageHandler
+   * @var array
    */
-  static protected $storageHandler;
-  
+  static protected $debuggers = array();
+   
   /**
    * This should be extended to handle all incoming data instead of doing it through the execute function
    *
@@ -155,8 +156,9 @@ abstract class BOSHClient
    *
    * @param string|bool $sid Supplied int is the SID, else false for creating a new client
    */
-  function __construct( $sid = null )
+  function __construct( $boshURL, $sid = null )
   {
+    $this->boshURL = $boshURL;
     $this->sid = $sid;
     // Reset (build) our DOMDocument object and bodyNode
     $this->resetDom();
@@ -254,7 +256,6 @@ abstract class BOSHClient
    */
   protected function execute( $appendBody = true )
   {
-
     // If the sid is null, we need to make sure the rid is also null (just in case rid didn't get reset)
     if ( $this->sid === null )
     {
@@ -289,9 +290,9 @@ abstract class BOSHClient
     }
 
     // Create our CURL resource
-    $curlResource = curl_init( self::getHTTPAddress() );
+    $curlResource = curl_init( $this->boshURL );
     
-    $this->debug( 'HTTP Address', self::getHTTPAddress() );
+    $this->debug( 'HTTP Address', $this->boshURL );
     
     // Set option to return transfer instead of returning true on success
     curl_setopt( $curlResource, CURLOPT_RETURNTRANSFER, 1);
@@ -321,10 +322,11 @@ abstract class BOSHClient
     
     // Execute our CURL session
     $data = curl_exec( $curlResource );
+
+    var_dump( $data );
     
     if ( $data == '' )
     {
-//      $this->reset();
       $this->debug( 'Curl Error', curl_error( $curlResource ) );
       throw new BOSHFailureException( 'Curl Error: ' . curl_error( $curlResource ), BOSHFailureException::CODE_NO_DATA );
     }
@@ -393,70 +395,6 @@ abstract class BOSHClient
   {  
     $this->sid = null;
     $this->resetDom();
-  }
-  
-  /**
-   * Debugger debug function conduit
-   *
-   * @param string $title
-   * @param string $data
-   */
-  public function debug( $title, $data = '' )
-  {
-    foreach ( self::$debuggers as $debugger )
-    {
-      $debugger->debug( $title, $data );
-    }
-  }
-  
-  /**
-   * Set the debugger object to use; this object must contain the 'debug' function with params $title, $data in that order.
-   *
-   * @param object $object
-   * @return bool
-   */
-  static public function registerDebugger( $object )
-  {
-    if ( false === ( $object instanceof Debugger ) && $object !== null )
-    {
-      throw new Exception( 'BOSHClient debugger object must extend class Debugger' );
-    }
-    self::$debuggers[] = & $object;
-    return true;
-  }
-  
-  /**
-   * Set the sotrage handling object for this class
-   *
-   * @param SessionHandler $object
-   */
-  static public function setStorageHandler( $object )
-  {
-    if ( false === ( $object instanceof StorageHandler ) && $object != null )
-    {
-      throw new Exception( 'BOSHClient given invalid SessionHandler parameter' );
-    }
-    self::$storageHandler = & $object;
-    return true;
-  }
-
-  /**
-   * Set the connection information for the BOSHClient object
-   *
-   * @param string $host
-   * @param int $port
-   * @param string $uri
-   */
-  static public function setConnectionInformation( $host, $port, $uri )
-  {
-    self::$boshHost = $host;
-    self::$boshPort = $port;
-    self::$boshURI = $uri;
-  }
-  
-  static public function getHTTPAddress()
-  {
-    return 'http://' . self::$boshHost . ':' . self::$boshPort . '/' . self::$boshURI;
   }
 }
 

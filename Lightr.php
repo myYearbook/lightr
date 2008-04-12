@@ -15,7 +15,7 @@
  * @example /home/dallas/public_html/Lightr/
  * @var String
  */
-define( '__LIGHTR_PATH', '/var/www/dallas.devk.it/im/lightr/' );
+define( '__LIGHTR_PATH', '/home/dallas/public_html/Lightr/' );
 
 // Build map of folders
 $files = scandir( __LIGHTR_PATH );
@@ -49,7 +49,6 @@ function __autoload( $className )
       return;
     }
   }
-  throw new Exception( 'Couldn\'t load class ' . $className );
 }
 
 ?>

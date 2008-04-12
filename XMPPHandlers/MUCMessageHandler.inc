@@ -14,14 +14,14 @@ class MUCMessageHandler extends XMPPHandlerObject
    *
    * @var string
    */
-  public $xpath = '/message[type="groupchat"]';
+  public $xpath = array( '/message[type="groupchat"]' );
   
   /**
    * Process a node
    *
    * @param SimpleXMLElement $node
    */
-  public function process( $node, $owner )
+  public function process( SimpleXMLElement $node )
   {
     $this->owner->debug( 'MUC Message', print_r( $node, true ) );
   }

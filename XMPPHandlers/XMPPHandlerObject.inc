@@ -18,18 +18,29 @@ abstract class XMPPHandlerObject
   private $owner;
   
   /**
-   * The xpath string for which this handler should be called
+   * The xpath strings for which this handler should be called
    *
-   * @var string
+   * @var array
    */
   public $xpath;
   
   /**
    * Process a node
    *
+   * @param int $index
    * @param SimpleXMLElement $node
    */
-  abstract public function process( $node, $owner );
+  abstract public function process( $index, SimpleXMLElement $node );
+  
+  /**
+   * Set the owner of this object
+   *
+   * @param XMPPClient $object
+   */
+  public function setOwner( XMPPClient $object )
+  {
+    $this->owner = $owner;
+  }
 }
 
 ?>

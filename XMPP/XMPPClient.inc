@@ -3,14 +3,14 @@
 /**
  * XMPPClient Class
  *
- * @desc Makes use of the XMPP protocol with XEP-0124 (BOSH) integration
+ * Makes use of the XMPP protocol with XEP-0124 (BOSH) integration
  *
  * @author Dallas Gutauckis <dgutauckis@myyearbook.com>
  * @since 2007-07-25
  * @uses BOSHClient
  */
 
-class XMPPClient extends BOSHClient
+final class XMPPClient extends BOSHClient
 {
 
   const NS_SASL = 'urn:ietf:params:xml:ns:xmpp-sasl';
@@ -21,14 +21,14 @@ class XMPPClient extends BOSHClient
    *
    * @var array
    */
-  static private $handlers = array();
-  
+  private $handlers = array();
+   
   /**
-   * Public member variable to tell this class whether or not it should save messages sent to it.
+   * The number of times this object has been "built" either by construct or wakeup (unserialize)
    *
-   * @var bool
+   * @var int
    */
-  public $saveMessages = true;
+  private $buildCount = 0;
   
   /**
    * SASLMechanism
@@ -78,13 +78,6 @@ class XMPPClient extends BOSHClient
    * @var XMPPPresence
    */
   private $presence;
-
-  /**
-   * An array containing all of the uncleared messages not retrieved by the client
-   *
-   * @var array
-   */
-  private $messages;
   
   /**
    * XMPPJID representation of the current connection's jid (Jabber ID)
@@ -94,22 +87,26 @@ class XMPPClient extends BOSHClient
   private $jid;
   
   /**
+   * Storage Handler for this instance
+   *
+   * @var StorageHandler
+   */
+  private $storageHandler;
+  
+  /**
+   * Debug Handler for this instance
+   *
+   * @var Debugger
+   */
+  private $debugHandler;
+  
+  /**
    * Whether or not the current connection has authenticated
    *
    * @var bool
    */
   private $authenticated = false;
   
-  /**
-   * Gets the username for the current XMPPClient session
-   *
-   * @return string Username
-   */
-  public function getUsername()
-  {
-    return $this->username;
-  }
-
   public function getBodyElement()
   {
     return $this->bodyElement;
@@ -129,8 +126,11 @@ class XMPPClient extends BOSHClient
    * @param int $boshPort The port of the BOSH server to connect to (default: 8080)
    * @param string $boshUri The URI the BOSH server should query (default: '/http-bind/')
    */
-  function __construct( $boshServer, $boshPort = 8080, $boshURI = '/http-bind/' )
+  function __construct( StorageHandler $storageHandler, $boshServer, $boshPort = 8080, $boshURI = '/http-bind/' )
   {
+    
+    $this->storageHandler = $storageHandler;
+    
     // Set up our boshServer address (and default XMPP server)
     $this->server = $boshServer;
 
@@ -153,32 +153,22 @@ class XMPPClient extends BOSHClient
    * XMPPClient get function to retrieve an XMPPClient
    *
    * @param XMPPJID $XMPPJID
-   * @return XMPPClient
+   * @param string $password
+   * @return XMPPClient|false
    */
-  static function get( $XMPPJID, $password )
+  static function get( StorageHandler $storageHandler, XMPPJID $XMPPJID, $password )
   {
     $node = $XMPPJID->node;
     $domain = $XMPPJID->domain;
     $resource = $XMPPJID->resource;
     
-    // If our storage handler variable is a StorageHandler object
-    if ( BOSHClient::$storageHandler instanceof StorageHandler )
+    $XMPPClient = $storageHandler->get( 'XMPPClient:' . $XMPPJID->getJID() );
+    if ( false === ( $XMPPClient instanceof XMPPClient ) )
     {
-      // If we can't get the XMPPClient from cache, otherwise, set $XMPPClient to it's instance
-      if ( false === ( $XMPPClient = BOSHClient::$storageHandler->get( 'XMPPClient:' . $XMPPJID->node ) ) )
-      {
-        // Create a new XMPPClient
-        $XMPPClient = new XMPPClient( BOSHClient::$boshHost, BOSHClient::$boshPort, BOSHClient::$boshURI );
-        /// And... connect.
-        $XMPPClient->connect( $node, $password, $domain, $resource );
-      }
-    } else {
-      // If our storage handler variable isn't a StorageHandler object, create a new one
-      $XMPPClient = new XMPPClient( BOSHClient::$boshHost, BOSHClient::$boshPort, BOSHClient::$boshURI );
-      // And... connect.
-      $XMPPClient->connect( $node, $password, $domain, $resource );
+      return false;
     }
 
+    $XMPPClient->buildCount += 1;
     return $XMPPClient;
   }
   
@@ -189,39 +179,16 @@ class XMPPClient extends BOSHClient
    */
   final function poll()
   {
-    if ( ( microtime( true ) - $this->lastPoll + 2 ) > $this->polling )
-    {
-      // Make sure the dom document is fresh
-      $this->resetDom();
-      
-      // Send the request
-      $this->execute( );
-      
-      // Set the lastPoll member variable to now (when they "last polled)
-      $this->lastPoll = microtime( true );
-    } else {
-      throw new PollingFrequencyException( 'Polling too fast' );
-    }
-    return $result;
+    // Make sure the dom document is fresh
+    $this->resetDom();
+    
+    // Send the request
+    $this->execute( );
+    
+    // Set the lastPoll member variable to now (when they "last polled)
+    $this->lastPoll = microtime( true );
   }
 
-  /**
-   * Remove the resource portion (all following the first /) from the jid
-   *
-   * @param string $jid
-   */
-  private function normalizeJID( $jid )
-  {
-    // If the jid still contains the resource still --- remove it.
-    if ( false !== ( $slashPos = strpos( $jid, '/' ) ) )
-    {
-      $jid = substr( $jid, 0, $slashPos );
-    } else {
-      $jid = (string) $jid; 
-    }
-    return $jid;
-  }
-  
   /**
    * Set presence information
    *
@@ -279,6 +246,12 @@ class XMPPClient extends BOSHClient
       }
     }
 
+    foreach ( $rosterObj->groups as $groupName )
+    {
+      $groupMD5 = md5( $groupName );
+      $this->roster[$groupMD5][] = $rosterObj;
+    }
+    
     // Roster item didn't exist.... so we should create it
     $this->roster[] = $XMPPRosterItem;
     return true;
@@ -291,16 +264,12 @@ class XMPPClient extends BOSHClient
    */
   function execute()
   {
+    $currentBodyElement = simplexml_import_dom( $this->getBodyElement() );
+    
     $return = parent::execute();
-  
-    if ( $return instanceof BOSHError )
-    {
-      if ( $return->isTerminal() == true )
-      {
-        $this->authenticated = false;
-        $this->connected = false; 
-      }
-    }
+    
+    // Call the custom handlers on the current body element
+    $this->callCustomHandlers( $currentBodyElement, 0 );
     
     return $return;
   }
@@ -309,33 +278,34 @@ class XMPPClient extends BOSHClient
   /**
    * Connect the client to the server specified in the constructor, with given parameters
    *
-   * @param string $username
+   * @param XMPPJID $jid
    * @param string $password
    * @param string $domain
    * @param string $resource
    */
-  function connect( $username, $password, $domain = null, $resource = null )
+  function connect( XMPPJID $jid, $password )
   {
     // Set up that we're connecting
     $this->connecting = true;
-    
-    // Set our instance variables for this username/password
-    $this->username = $username;
-    $this->password = $password;
 
     // If they supplied a domain: use that; else: use the server specified in the constructor
-    $domain = ($domain !== null) ? ($domain) : ($this->server);
-    $this->domain = $domain;
+    $jid->domain = ($jid->domain !== null) ? ($jid->domain) : ($this->server);
     
     // Set default resource if needed
-    $this->resource = $resource = ($resource !== null) ? ($resource) : (__CLASS__);
-    $this->create( $domain, 2, 1.6, 'en', 10 );
+    $jid->resource = ( $jid->resource !== null ) ? ( $jid->resource ) : ( __CLASS__ . ':' . time() );
+    
+    // Set our instance variables for this username/password
+    $this->jid = $jid;
+    $this->password = $password;
+
+    // The server doesn't really care what we set these to, which is a bad thing
+    $this->create( $jid->domain, 1, 1.6, 'en', 1 );
   }
 
   /**
    * This function resets all of the member variables to prep for an initial connect
    */
-  protected function reset()
+  public function reset()
   {
     $this->debug( 'Reset Function Called' );
     parent::reset();
@@ -343,10 +313,17 @@ class XMPPClient extends BOSHClient
     $this->connected = false;
     $this->connecting = false;
     $this->authenticated = false;
-    if ( self::$storageHandler instanceof StorageHandler )
-    {
-      self::$storageHandler->delete( 'XMPPClient:' . $this->username );
-    }
+    $this->storageHandler->delete( $this->getKeyName() );
+  }
+  
+  /**
+   * Gets the key name to use for storage/retrieval
+   *
+   * @return string
+   */
+  function getKeyName()
+  {
+    return 'XMPPClient:' . $this->jid->getJID();
   }
   
   /**
@@ -476,7 +453,7 @@ class XMPPClient extends BOSHClient
    */
   protected function handleStreamFeatures( $streamFeaturesNode )
   {
-    $this->SASLMechanism = new SASLMechanism( $this->username, $this->password, $streamFeaturesNode->mechanisms );
+    $this->SASLMechanism = new SASLMechanism( $this->jid->node, $this->password, $streamFeaturesNode->mechanisms );
     // Create our auth node
     $auth = $this->domDocument->createElement( 'auth' );
     $auth->setAttribute( 'xmlns', self::NS_SASL );
@@ -523,7 +500,7 @@ class XMPPClient extends BOSHClient
 
     $bind = $this->domDocument->createElement( 'bind' );
     $bind->setAttribute( 'xmlns', 'urn:ietf:params:xml:ns:xmpp-bind' );
-    $resource = $this->domDocument->createElement( 'resource', $this->resource );
+    $resource = $this->domDocument->createElement( 'resource', $this->jid->resource );
     $bind->appendChild( $resource );
     $iq->appendChild( $bind );
     $this->bodyElement->appendChild( $iq );
@@ -535,22 +512,8 @@ class XMPPClient extends BOSHClient
   {
     if ( $failureNode->{'not-authorized'} )
     {
-      $jidToRemove = new XMPPJID( $this->username, $this->domain );
-      BOSHClient::$storageHandler->delete( $jidToRemove->getJID() );
+      $this->storageHandler->delete( $this->getKeyName() );
       throw new NotAuthorizedException( 'Failed to authenticate' );
-    }
-  }
-  
-  /**
-   * This function is called any time a message node appears
-   *
-   * @param SimpleXMLElement $messageNode
-   */
-  protected function handleMessage( $messageNode )
-  {
-    if ( $this->saveMessages === true )
-    {
-      $this->messages[] = XMPPMessage::buildBySimpleXML( $message );
     }
   }
   
@@ -561,19 +524,24 @@ class XMPPClient extends BOSHClient
    */
   function handleEmptyBody( $bodyElement )
   {
-    if ( $bodyElement['sid'] )
+    if ( $this->authenticated )
     {
-      $streamFeaturesNode = $bodyElement->{'stream:features'};
-      // Try connecting here...
-      $this->SASLMechanism = new SASLMechanism( $this->username, $this->password, $streamFeaturesNode->mechanisms );
-      // Create our auth node
-      $auth = $this->domDocument->createElement( 'auth' );
-      $auth->setAttribute( 'xmlns', self::NS_SASL );
-      $auth->setAttribute( 'mechanism', $this->SASLMechanism->getMechanism() );
-      $this->bodyElement->appendChild( $auth );
-  
-      // Execute
-      $result = $this->execute();
+      if ( $bodyElement['sid'] )
+      {
+        $streamFeaturesNode = $bodyElement->{'stream:features'};
+        // Try connecting here...
+        $this->SASLMechanism = new SASLMechanism( $this->jid->node, $this->password, $streamFeaturesNode->mechanisms );
+        // Create our auth node
+        $auth = $this->domDocument->createElement( 'auth' );
+        $auth->setAttribute( 'xmlns', self::NS_SASL );
+        $auth->setAttribute( 'mechanism', $this->SASLMechanism->getMechanism() );
+        $this->bodyElement->appendChild( $auth );
+    
+        // Execute
+        $result = $this->execute();
+      }
+    } else {
+      return false;
     }
   }
   
@@ -626,7 +594,7 @@ class XMPPClient extends BOSHClient
     $iq = $this->domDocument->createElement( 'iq' );
     $iq->setAttribute( 'id', 'sess_1' );
     $iq->setAttribute( 'from', $this->jid->getJID() );
-    $iq->setAttribute( 'to', $this->domain );
+    $iq->setAttribute( 'to', $this->jid->domain );
     $iq->setAttribute( 'type', 'set' );
     $iq->setAttribute( 'xmlns', 'jabber:client' );
 
@@ -662,54 +630,9 @@ class XMPPClient extends BOSHClient
   {
     $XMPPPresence = XMPPPresence::buildBySimpleXML( $presenceNode );
     $this->setPresenceInfo( $XMPPPresence );
-    //$this->debug( 'Presence Info', print_r( array( 'show' => $presenceNode->show, 'jid' => $presenceNode['from'], 'object' => $XMPPPresence ) , true ) );
+    $this->debug( 'Presence Info', print_r( array( 'show' => $presenceNode->show, 'jid' => $presenceNode['from'], 'object' => $XMPPPresence ) , true ) );
   }
   
-  /**
-   * Get all messages [from a given user]
-   *
-   * @param string $fromJID
-   */
-  public function getMessages( $fromJID = null )
-  {
-    if ( $fromJID === null )
-    {
-      // If the JID is null, they want any queued messages
-      $messages = $this->messages;
-      return $messages;
-    } else {
-      $toSendMessages = array();
-      foreach ( $this->messages as &$message )
-      {
-        if ( $message->from == $fromJID )
-        {
-          $toSendMessages[] = $message;
-        }
-      }
-      return $toSendMessages;
-    }
-  }
-  
-  /**
-   * Clear a message from the message queue
-   *
-   * @param XMPPMessage $XMPPMessage
-   * @return integer How many messages that were found and removed
-   */
-  public function clearMessage( $XMPPMessage )
-  {
-    $findCount = 0;
-    foreach( $this->messages as $message )
-    {
-      if ( $XMPPMessage == $message )
-      {
-        $findCount += 1;
-        unset( $message );
-      }
-    }
-    return $findCount;
-  }
-
   /**
    * Send a roster request to the server
    *
@@ -884,32 +807,40 @@ class XMPPClient extends BOSHClient
   /**
    * Register a handler for the given node based on passed in xpath to the passed object instance.
    *
-   * @param string $xpathSelector
+   * @param string $handlerName The name under which to store this handler
    * @param XMPPHandlerObject $object
    */
-  static public function registerHandler( &$object )
+  public function registerHandler( $handlerName, &$object )
   {
     if ( false === ( $object instanceof XMPPHandlerObject ) )
     {
       throw new Exception( 'Invalid object passed to ' . __CLASS__ . '::' . __FUNCTION__ . ' method. Object must be of type XMPPHandlerObject.' );
     }
-    self::$handlers[] = & $object;
+    $object->setOwner( $this );
+    $this->handlers[$handlerName] = &$object;
+  }
+  
+  /**
+   * Get a handler object by name
+   *
+   * @param string $handlerName The name under which the handler was stored
+   */
+  public function getHandler( $handlerName )
+  {
+    return $this->handlers[$handlerName];
   }
   
   /**
    * Unregister a handler
    *
-   * @param XMPPHandlerObject $object
+   * @param string $handlerName
    * @return bool Returns true if the handler was found and removed
    */
-  static public function unregisterHandler( &$object )
+  public function unregisterHandler( $handlerName )
   {
-    foreach ( self::$handlers as &$handler )
+    if ( array_key_exists( $handlerName, $this->handlers ) )
     {
-      if ( $object === $handler )
-      {
-        unset( $handler );
-      }
+      unset( $this->handlers[$handlerName] );
       return true;
     }
     return false;
@@ -918,7 +849,7 @@ class XMPPClient extends BOSHClient
   /**
    * Handle the result of a BOSH execution
    *
-   * @param BOSHResult|BOSHError $result
+   * @param BOSHResult $result
    * @return true
    */
   protected function handleResult( $result )
@@ -979,26 +910,7 @@ class XMPPClient extends BOSHClient
         $this->handlePresence( $presence );
       }
 
-      // Find any messages
-      foreach ( $body->message as $message )
-      {
-        $this->handleMessage( $message );
-      }
-
-      if ( count( $this->handlers ) > 0 )
-      { 
-        // Process handlers last
-        foreach ( $this->handlers as $handler )
-        {
-          if ( false !== ( $nodes = $body->xpath( $handler->xpath ) ) )
-          {
-            foreach ( $nodes as $node )
-            {
-              $handler->process( $node );
-            }
-          }
-        }
-      }
+      $this->callCustomHandlers( $body, 1 );
       
     } else {
       throw new Exception( 'Invalid type passed to handleResult method; expecting BOSHResult or BOSHError' );
@@ -1007,19 +919,66 @@ class XMPPClient extends BOSHClient
   }
 
   /**
+   * Call all custom handlers for a given body element
+   *
+   * @param SimpleXMLElement $body
+   * @param int $direction 0 for out, 1 for in
+   */
+  private function callCustomHandlers( $body, $direction )
+  {
+    if ( count( $this->handlers ) > 0 )
+    {
+      // Process handlers last
+      foreach ( $this->handlers as $handler )
+      {
+        foreach ( $handler->xpath as $index => $xpath )
+        {
+          if ( false !== ( $nodes = $body->xpath( $xpath ) ) )
+          {
+            foreach ( $nodes as $node )
+            {
+              $handler->process( $index, $node );
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Debug conduit
+   *
+   * @param string $title
+   * @param string $data
+   */
+  function debug( $title, $data = '' )
+  {
+    if ( $this->debugHandler !== null )
+    {
+      $this->debugHandler->debug( $title, $data );
+    } 
+  }
+  
+  /**
+   * Register the debugger for this instance
+   *
+   * @param Debugger $debugger
+   */
+  function registerDebugger( Debugger $debugger )
+  {
+    if ( false !== ( $debugger instanceof Debugger ) )
+    {
+       $this->debugHandler = $debugger;
+    }
+  }
+  
+  /**
    * Class destructor
    */
   function __destruct()
   {
-    if ( BOSHClient::$storageHandler instanceof StorageHandler )
-    {
-      if ( $this->connected )
-      {
-        BOSHClient::$storageHandler->set( 'XMPPClient:' . $this->username, $this, 60 );
-      } else {
-        BOSHClient::$storageHandler->delete( 'XMPPClient:' . $this->username );
-      }
-    }
+    $result = $this->storageHandler->set( $this->getKeyName(), $this, 200 );
+    $this->debug( 'Storage save client', var_export( $result, true ) );
   }
   
 }

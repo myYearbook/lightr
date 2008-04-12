@@ -8,7 +8,7 @@ class NotAuthorizedException extends Exception
     {
       $message = 'Authentication failure: not authorized';
     }
-    parent::__construct( $messgae, $code );
+    parent::__construct( $message, $code );
   }
 }
 
