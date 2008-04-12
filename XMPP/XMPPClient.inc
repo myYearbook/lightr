@@ -299,7 +299,7 @@ final class XMPPClient extends BOSHClient
     $this->password = $password;
 
     // The server doesn't really care what we set these to, which is a bad thing
-    $this->create( $jid->domain, 1, 1.6, 'en', 1 );
+    $this->create( $jid->domain, 1, 1.6, 'en', 10 );
   }
 
   /**
