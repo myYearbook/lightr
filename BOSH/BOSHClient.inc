@@ -323,8 +323,6 @@ abstract class BOSHClient
     // Execute our CURL session
     $data = curl_exec( $curlResource );
 
-    var_dump( $data );
-    
     if ( $data == '' )
     {
       $this->debug( 'Curl Error', curl_error( $curlResource ) );
