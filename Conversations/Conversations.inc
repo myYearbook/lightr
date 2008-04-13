@@ -68,7 +68,10 @@ class Conversations
    */
   function add( XMPPJID $XMPPJID )
   {
-    $this->conversations[] = $XMPPJID;
+    if ( false === in_array( $XMPPJID, $this->conversations ) )
+    {
+      $this->conversations[] = $XMPPJID;
+    }
   }
   
   /**
