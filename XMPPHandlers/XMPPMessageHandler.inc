@@ -38,7 +38,7 @@ class XMPPMessageHandler extends XMPPHandlerObject
   public $xpath = array( 
     array( 
       'xpath' => '//bosh:message[@type="chat"]', 
-      'direction' => 2 
+      'direction' => 1 
     )
   );
 
@@ -74,38 +74,22 @@ class XMPPMessageHandler extends XMPPHandlerObject
 
     if ( $direction == 1 )
     {
-      if ( isset($node->active) )
-      {
-        $conversation->to->state = Conversation::STATE_ACTIVE;
-      }
-  
-      if ( isset($node->inactive) )
-      {
-        $conversation->to->state = Conversation::STATE_INACTIVE;
-      }
-  
       if ( isset($node->composing) )
       {
         $conversation->to->state = Conversation::STATE_COMPOSING;
-      }
-  
-      if ( isset($node->paused) )
-      {
+      } else if ( isset($node->paused) ) {
         $conversation->to->state = Conversation::STATE_PAUSED;
-      }
-  
-      if ( isset($node->gone) )
-      {
+      } else if ( isset($node->inactive) ) {
+        $conversation->to->state = Conversation::STATE_INACTIVE;
+      } else if ( isset($node->active) ) {
+        $conversation->to->state = Conversation::STATE_ACTIVE;
+      } else if ( isset($node->gone) ) {
         $conversation->to->state = Conversation::STATE_GONE;
       }
     }
-    
+
     if ( isset($node->body) )
     {
-      if ( $direction == 1 )
-      {
-        $conversation->to->state->composing = false;
-      }
       $conversation->addMessage( $message );
     }
   }
