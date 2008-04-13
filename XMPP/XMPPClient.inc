@@ -107,11 +107,21 @@ final class XMPPClient extends BOSHClient
    */
   private $authenticated = false;
   
+  /**
+   * Get the BODY element for outgoing nodes
+   *
+   * @return DomElement
+   */
   public function getBodyElement()
   {
     return $this->bodyElement;
   }
   
+  /**
+   * Return the current DOMDocument
+   *
+   * @return DOMDocument
+   */
   public function getDomDocument()
   {
     return $this->domDocument;
@@ -128,7 +138,6 @@ final class XMPPClient extends BOSHClient
    */
   function __construct( StorageHandler $storageHandler, $boshServer, $boshPort = 8080, $boshURI = '/http-bind/' )
   {
-    
     $this->storageHandler = $storageHandler;
     
     // Set up our boshServer address (and default XMPP server)
@@ -144,7 +153,7 @@ final class XMPPClient extends BOSHClient
     {
       $connectString .= $boshURI;
     }
-
+  
     // Create our BOSHClient
     parent::__construct( $connectString );
   }
@@ -630,7 +639,7 @@ final class XMPPClient extends BOSHClient
   {
     $XMPPPresence = XMPPPresence::buildBySimpleXML( $presenceNode );
     $this->setPresenceInfo( $XMPPPresence );
-    $this->debug( 'Presence Info', print_r( array( 'show' => $presenceNode->show, 'jid' => $presenceNode['from'], 'object' => $XMPPPresence ) , true ) );
+    //$this->debug( 'Presence Info', print_r( array( 'show' => $presenceNode->show, 'jid' => $presenceNode['from'], 'object' => $XMPPPresence ) , true ) );
   }
   
   /**

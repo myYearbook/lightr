@@ -98,11 +98,22 @@ class XMPPMessageHandler extends XMPPHandlerObject
    * Process an XMPPMessage and send it via the XMPPClient owner object
    *
    * @param XMPPMessage $message
-   * @not-implemented
    */
   public function sendMessage( XMPPMessage $message )
   {
     $dom = $this->owner->getDomDocument();
+    $body = $this->owner->getBodyElement();
+    
+    $domMessage = $dom->createElement( 'message' );
+    $domMessage->setAttribute( 'type', $message->type );
+    $domMessage->setAttribute( 'to', $message->to->getJID() );
+    $domMessage->setAttribute( 'from', $message->from->getJID() );
+    
+    $domBody = $dom->createElement( 'body', $message->body );
+    $domMessage->appendChild( $domBody );
+    
+    $body->appendChild( $domMessage );
+    $this->owner->execute();
   }
 }
 

@@ -13,7 +13,7 @@ class XMPPMessage extends XMPPStanzaObject
   /**
    * Who the message is said to be from
    *
-   * @var string
+   * @var XMPPJID
    */
   public $from;
   /**
@@ -25,7 +25,7 @@ class XMPPMessage extends XMPPStanzaObject
   /**
    * The body of the message
    *
-   * @var XMPPJID
+   * @var string
    */
   public $body;
   /**
@@ -34,7 +34,14 @@ class XMPPMessage extends XMPPStanzaObject
    * @var int
    */
   public $buildTime;
-
+  /**
+   * String for this message type
+   *
+   * @var string
+   */
+  public $type;
+  
+  
   /**
    * Build an XMPPMessage by SimpleXMLElement node and return it
    *
