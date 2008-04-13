@@ -29,11 +29,11 @@ class XMPPMessage extends XMPPStanzaObject
    */
   public $body;
   /**
-   * The past tense of read, read. Has this message been read?
-   *
-   * @var boolean
+   * The time this message was built
+   * 
+   * @var int
    */
-  private $read = false;
+  public $buildTime;
 
   /**
    * Build an XMPPMessage by SimpleXMLElement node and return it
@@ -71,6 +71,7 @@ class XMPPMessage extends XMPPStanzaObject
     $this->to = $to;
     $this->type = $type;
     $this->body = $body;
+    $this->buildTime = time();
   }
 }
 

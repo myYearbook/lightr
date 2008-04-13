@@ -57,8 +57,13 @@ class Conversation
    */
   function addMessage( XMPPMessage $XMPPMessage )
   {
-    $this->messages[] = $XMPPMessage;
-    if ( $XMPPMessage->to->getJID() == $this->fromJID->getJID() )
+    $message = new stdClass();
+    $message->direction = ( $XMPPMessage->to->getJID() == $this->toJID ) ? ( 0 ) : ( 1 );
+    $message->body = $XMPPMessage->body;
+    $message->time = $XMPPMessage->buildTime;
+    
+    $this->messages[] = $message;
+    if ( $message->direction == 1 )
     {
       $this->newCount += 1;
     }
@@ -93,7 +98,7 @@ class Conversation
     {
       foreach ( $messages as $index => $message )
       {
-        if ( $message->from == $this->toJID )
+        if ( $message->direction == 1 )
         {
           $toReturn[] = $message;
         }

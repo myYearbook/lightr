@@ -110,7 +110,10 @@ class Conversations
   function getConversation( XMPPJID $to )
   {
     $conversation = Conversation::get( $this->jid, $to, $this->storageHandler );
-    $this->conversations[] = $to;
+    if ( false === in_array( $XMPPJID, $this->conversations ) )
+    {
+      $this->conversations[] = $to;
+    }
     return $conversation;
   }
   
