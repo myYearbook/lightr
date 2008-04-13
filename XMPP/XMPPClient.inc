@@ -528,7 +528,7 @@ final class XMPPClient extends BOSHClient
     {
       if ( $bodyElement['sid'] )
       {
-        $streamFeaturesNode = $bodyElement->{'stream:features'};
+        $streamFeaturesNode = $bodyElement->xpath( '//*[namespace-uri(.) = \'http://etherx.jabber.org/streams\']/features' );
         // Try connecting here...
         $this->SASLMechanism = new SASLMechanism( $this->jid->node, $this->password, $streamFeaturesNode->mechanisms );
         // Create our auth node

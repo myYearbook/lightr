@@ -29,7 +29,7 @@ class SessionStorageHandler extends StorageHandler
    * @param mixed $entity
    * @return bool Whether we saved or not
    */
-  function set( $key, $entity )
+  function set( $key, $entity, $expire = null )
   {
     $key = $this->prepareKey( $key );
     if ( is_array( $_SESSION ) )
