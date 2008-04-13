@@ -21,6 +21,7 @@ abstract class XMPPHandlerObject
    * The xpath strings for which this handler should be called
    *
    * @var array
+   * @example array( array( 'xpath' => '//bosh:message', direction => 2 ) )
    */
   public $xpath;
   

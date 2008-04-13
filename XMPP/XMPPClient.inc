@@ -934,12 +934,15 @@ final class XMPPClient extends BOSHClient
       {
         foreach ( $handler->xpath as $index => $xpath )
         {
-          $nodes = $body->xpath( $xpath );
-          if ( $nodes !== false )
+          if ( $direction == $xpath['direction'] || $xpath['direction'] == 2 )
           {
-            foreach ( $nodes as $node )
+            $nodes = $body->xpath( $xpath['xpath'] );
+            if ( $nodes !== false )
             {
-              $handler->process( $index, $node );
+              foreach ( $nodes as $node )
+              {
+                $handler->process( $index, $node, $direction );
+              }
             }
           }
         }

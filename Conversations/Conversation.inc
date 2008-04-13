@@ -8,14 +8,14 @@ class Conversation
    *
    * @var XMPPJID
    */
-  public $toJID;
+  public $to;
 
   /**
    * XMPPJID 'from' of this conversation
    *
    * @var XMPPJID
    */
-  public $fromJID;
+  public $from;
   
   /**
    * Array of messages sent/received (in order of add)
@@ -37,7 +37,18 @@ class Conversation
    * @var int
    */
   public $newCount = 0;
-  
+
+  /**
+   * Chat State Notification Definitions 
+   *
+   * @var 
+   */
+  const STATE_ACTIVE    = 0x00; // User is actively participating in the chat session.
+  const STATE_INACTIVE  = 0x02; // User has not been actively participating in the chat session.
+  const STATE_COMPOSING = 0x04; // User is composing a message.
+  const STATE_PAUSED    = 0x08; // User had been composing but now has stopped.
+  const STATE_GONE      = 0x16; // User has effectively ended their participation in the chat session.
+
   /**
    * Class constructor
    *
@@ -45,11 +56,15 @@ class Conversation
    */
   function __construct( XMPPJID $fromJID, XMPPJID $toJID, StorageHandler $storageHandler )
   {
-    $this->fromJID = $fromJID;
-    $this->toJID = $toJID;
+    $this->from->JID   = $fromJID;
+    $this->from->state = null;
+
+    $this->to->JID   = $toJID;
+    $this->to->state = null;
+
     $this->storageHandler = $storageHandler;
   }
-  
+
   /**
    * Add a message to the conversation list
    *
@@ -58,10 +73,10 @@ class Conversation
   function addMessage( XMPPMessage $XMPPMessage )
   {
     $message = new stdClass();
-    $message->direction = ( $XMPPMessage->to->getJID() == $this->toJID ) ? ( 0 ) : ( 1 );
+    $message->direction = ( $XMPPMessage->to->getJID() == $this->to->JID ) ? ( 0 ) : ( 1 );
     $message->body = $XMPPMessage->body;
     $message->time = $XMPPMessage->buildTime;
-    
+
     $this->messages[] = $message;
     if ( $message->direction == 1 )
     {
@@ -132,7 +147,7 @@ class Conversation
    */
   function destroy()
   {
-    $this->storageHandler->delete( Conversation::getKeyName( $this->fromJID, $this->toJID ) );
+    $this->storageHandler->delete( Conversation::getKeyName( $this->from->JID, $this->to->JID ) );
   }
   
   /**
@@ -141,7 +156,7 @@ class Conversation
    */
   function save()
   {
-    $this->storageHandler->set( Conversation::getKeyName( $this->fromJID, $this->toJID ), $this );
+    $this->storageHandler->set( Conversation::getKeyName( $this->from->JID, $this->to->JID ), $this );
   }
   
   /**

@@ -28,7 +28,16 @@ class XEP0153Handler extends XMPPHandlerObject
    *
    * @var array
    */
-  public $xpath = array( '/presence/x[xmlns="vcard-temp:x:update"]/photo/../../.', '/iq/vCard[xmlns="vcard-temp"]/PHOTO/BINVAL/../../../.' );
+  public $xpath = array( 
+    array( 
+      'xpath' => '/presence/x[xmlns="vcard-temp:x:update"]/photo/../../.', 
+      'direction' => 1 
+    ), 
+    array( 
+      '/iq/vCard[xmlns="vcard-temp"]/PHOTO/BINVAL/../../../.', 
+      'direction' => 1 
+    ) 
+  );
   
   /**
    * Class Constructor

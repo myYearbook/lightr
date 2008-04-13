@@ -68,12 +68,12 @@ class Conversations
    */
   function add( XMPPJID $XMPPJID )
   {
-    if ( false === in_array( $XMPPJID, $this->conversations ) )
+    if ( false === array_key_exists( md5($XMPPJID->__toString()), $this->conversations ) )
     {
-      $this->conversations[] = $XMPPJID;
+      $this->conversations[md5($XMPPJID->__toString())] = $XMPPJID;
     }
   }
-  
+
   /**
    * Remove a conversation
    *
@@ -113,10 +113,7 @@ class Conversations
   function getConversation( XMPPJID $to )
   {
     $conversation = Conversation::get( $this->jid, $to, $this->storageHandler );
-    if ( false === in_array( $XMPPJID, $this->conversations ) )
-    {
-      $this->conversations[] = $to;
-    }
+    $this->add($to);
     return $conversation;
   }
   

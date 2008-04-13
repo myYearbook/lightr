@@ -14,7 +14,12 @@ class MUCMessageHandler extends XMPPHandlerObject
    *
    * @var string
    */
-  public $xpath = array( '/message[type="groupchat"]' );
+  public $xpath = array( 
+    array( 
+      'xpath' => '/message[type="groupchat"]', 
+      'direction' => 2
+    ) 
+  );
   
   /**
    * Process a node

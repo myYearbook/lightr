@@ -35,8 +35,18 @@ class XMPPMessageHandler extends XMPPHandlerObject
    *
    * @var string
    */
-  public $xpath = array( '//bosh:message[@type="chat"]' );
-  
+  public $xpath = array( 
+    array( 
+      'xpath' => '//bosh:message[@type="chat"]', 
+      'direction' => 2 
+    )
+  );
+
+  /**
+   * Not documented?
+   *
+   * @var int
+   */
   public $buildCount = 0;
   
   /**
@@ -57,11 +67,47 @@ class XMPPMessageHandler extends XMPPHandlerObject
    *
    * @param SimpleXMLElement $node
    */
-  public function process( $index, SimpleXMLElement $node )
+  public function process( $index, SimpleXMLElement $node, $direction )
   {
     $message = XMPPMessage::buildBySimpleXML( $node );
     $conversation = $this->conversations->getConversation( $message->from );
-    $conversation->addMessage( $message );
+
+    if ( $direction == 1 )
+    {
+      if ( isset($node->active) )
+      {
+        $conversation->to->state = Conversation::STATE_ACTIVE;
+      }
+  
+      if ( isset($node->inactive) )
+      {
+        $conversation->to->state = Conversation::STATE_INACTIVE;
+      }
+  
+      if ( isset($node->composing) )
+      {
+        $conversation->to->state = Conversation::STATE_COMPOSING;
+      }
+  
+      if ( isset($node->paused) )
+      {
+        $conversation->to->state = Conversation::STATE_PAUSED;
+      }
+  
+      if ( isset($node->gone) )
+      {
+        $conversation->to->state = Conversation::STATE_GONE;
+      }
+    }
+    
+    if ( isset($node->body) )
+    {
+      if ( $direction == 1 )
+      {
+        $conversation->to->state->composing = false;
+      }
+      $conversation->addMessage( $message );
+    }
   }
   
   /**
