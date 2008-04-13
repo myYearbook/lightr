@@ -338,9 +338,9 @@ abstract class BOSHClient
       $this->reset();
       return false;
     }
-
+   
     $body = simplexml_load_string( $data );
-    
+      
     $this->debug( 'Incoming', var_export( $data, true ) );
     
     if ( $body->body->pre )

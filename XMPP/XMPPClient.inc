@@ -928,12 +928,14 @@ final class XMPPClient extends BOSHClient
   {
     if ( count( $this->handlers ) > 0 )
     {
+      $body->registerXPathNamespace( 'bosh', 'http://jabber.org/protocol/httpbind' );
       // Process handlers last
       foreach ( $this->handlers as $handler )
       {
         foreach ( $handler->xpath as $index => $xpath )
         {
-          if ( false !== ( $nodes = $body->xpath( $xpath ) ) )
+          $nodes = $body->xpath( $xpath );
+          if ( $nodes !== false )
           {
             foreach ( $nodes as $node )
             {

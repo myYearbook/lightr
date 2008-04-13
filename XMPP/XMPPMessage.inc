@@ -19,13 +19,13 @@ class XMPPMessage extends XMPPStanzaObject
   /**
    * Who the target of the message is
    *
-   * @var string
+   * @var XMPPJID
    */
   public $to;
   /**
    * The body of the message
    *
-   * @var string
+   * @var XMPPJID
    */
   public $body;
   /**
@@ -43,7 +43,7 @@ class XMPPMessage extends XMPPStanzaObject
    */
   static function buildBySimpleXML ( $sxmlMessage )
   {
-    $return = new XMPPMessage( (string) $sxmlMessage['from'], (string) $sxmlMessage['to'], (string) $sxmlMessage['type'], (string) $sxmlMessage->body );
+    $return = new XMPPMessage( XMPPJID::getByString( $sxmlMessage['from'] ), XMPPJID::getByString( $sxmlMessage['to'] ), (string) $sxmlMessage['type'], (string) $sxmlMessage->body );
     return $return;
   }  
   
@@ -57,7 +57,15 @@ class XMPPMessage extends XMPPStanzaObject
     $this->read = $read;
   }
   
-  function __construct( $from = null, $to = null, $type = null, $body = null )
+  /**
+   * Class constructor
+   *
+   * @param XMPPJID $from
+   * @param XMPPJID $to
+   * @param string $type Default is chat
+   * @param string $body
+   */
+  function __construct( XMPPJID $from, XMPPJID $to, $type = 'chat', $body )
   {
     $this->from = $from;
     $this->to = $to;

@@ -35,7 +35,7 @@ class XMPPMessageHandler extends XMPPHandlerObject
    *
    * @var string
    */
-  public $xpath = array( '/message[@type="chat"]' );
+  public $xpath = array( '//bosh:message[@type="chat"]' );
   
   public $buildCount = 0;
   
