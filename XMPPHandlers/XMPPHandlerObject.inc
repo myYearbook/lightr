@@ -30,8 +30,9 @@ abstract class XMPPHandlerObject
    *
    * @param int $index
    * @param SimpleXMLElement $node
+   * @param int $direction
    */
-  abstract public function process( $index, SimpleXMLElement $node );
+  abstract public function process( $index, SimpleXMLElement $node, $direction );
   
   /**
    * Set the owner of this object
