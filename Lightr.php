@@ -15,7 +15,7 @@
  * @example /home/dallas/public_html/Lightr/
  * @var String
  */
-define( '__LIGHTR_PATH', '/home/dallas/public_html/Lightr/' );
+define( '__LIGHTR_PATH', '/var/www/dallas.devk.it/im/lightr/' );
 
 // Build map of folders
 $files = scandir( __LIGHTR_PATH );
