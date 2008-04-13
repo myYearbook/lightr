@@ -109,7 +109,9 @@ class Conversations
    */
   function getConversation( XMPPJID $to )
   {
-    return Conversation::get( $this->jid, $to, $this->storageHandler );
+    $conversation = Conversation::get( $this->jid, $to, $this->storageHandler );
+    $this->conversations[] = $to;
+    return $conversation;
   }
   
   /**

@@ -74,35 +74,6 @@ class XMPPMessageHandler extends XMPPHandlerObject
   {
     $dom = $this->owner->getDomDocument();
   }
-  
-  /**
-   * Get the messages received
-   *
-   * @param boolean $new Only return new messages?
-   * @return array Array of messages
-   */
-  public function getMessages( $new = false )
-  {
-    return $this->messages;
-  }
-  
-  /**
-   * Class destructor
-   */
-  function __destruct()
-  {
-    $this->save();
-  }
-  
-  private function retrieve()
-  {
-    $this->messages = $this->storageHandler->get( 'XMPPMessages:' . $this->jid->getJID() );
-  }
-  
-  private function save()
-  {
-    $this->storageHandler->set( 'XMPPMessages:' . $this->jid->getJID(), $this->messages );
-  }
 }
 
 ?>
