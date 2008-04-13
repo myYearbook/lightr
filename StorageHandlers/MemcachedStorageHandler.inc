@@ -54,11 +54,17 @@ class MemcachedStorageHandler extends StorageHandler
   {
     $xml = simplexml_load_file( __LIGHTR_PATH . 'config.xml' );
     $servers = $xml->storage->memcached->server;
-       
+    
+    $val = array();
     foreach ( $servers as $server )
     {
       list( $host, $port, $persistent, $weight ) = explode( ':', $server );
-      $this->memcachedInstance->addServer( $host, $port, true, $weight );
+      $val[] = $this->memcachedInstance->addServer( $host, $port, $persistent, $weight );
+    }
+    
+    if ( ! in_array( true, $val ) )
+    {
+      throw new Exception( 'Failed to connect to a memcached server' ); 
     }
   }
   
@@ -99,7 +105,6 @@ class MemcachedStorageHandler extends StorageHandler
     // Get our memcache object
     $memcache = $this->getMemcachedObject();
     $returnValue = $memcache->set( $key, $entity, 0, $expire );
-    //var_dump( ( $this->get( $key ) == unserialize( $entity ) ) );
     return $returnValue;
   }
   

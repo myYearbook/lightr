@@ -15,7 +15,7 @@ abstract class XMPPHandlerObject
    *
    * @var XMPPClient
    */
-  private $owner;
+  public $owner;
   
   /**
    * The xpath strings for which this handler should be called
@@ -39,9 +39,9 @@ abstract class XMPPHandlerObject
    *
    * @param XMPPClient $object
    */
-  public function setOwner( XMPPClient $object )
+  public function setOwner( XMPPClient &$object )
   {
-    $this->owner = $owner;
+    $this->owner = &$object;
   }
 }
 

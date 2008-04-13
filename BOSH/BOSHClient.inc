@@ -102,7 +102,7 @@ abstract class BOSHClient
    *
    * @var bool
    */
-  private $connecting = false;
+  public $connecting = false;
   
   /**
    * Is the client connected?
