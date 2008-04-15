@@ -15,6 +15,14 @@ abstract class XMPPStanzaObject
    * @param SimpleXMLElement $simpleXMLElement
    */
   abstract static function buildBySimpleXML( $simpleXMLElement );
+  
+  /**
+   * A function to return the built DOMElement to represent this object
+   *
+   * @param DOMDocument $domDocument
+   * @return DOMElement
+   */
+  abstract function buildDOMElement( $domDocument );
 }
 
 ?>

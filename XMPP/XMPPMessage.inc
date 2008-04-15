@@ -80,6 +80,25 @@ class XMPPMessage extends XMPPStanzaObject
     $this->body = $body;
     $this->buildTime = time();
   }
+  
+  /**
+   * A function to return the built DOMElement to represent this object
+   *
+   * @param DOMDocument $domObject
+   * @return DOMElement
+   */
+  function buildDOMElement( $domDocument )
+  {
+    $message = $domDocument->createElement('message');
+    $message->setAttribute( 'to', $this->to->getJID() );
+    $message->setAttribute( 'from', $this->from->getJID() );
+    $message->setAttribute( 'type', $this->type );
+    
+    $body = $domDocument->createElement( 'body', $this->body );
+    $message->appendChild( $body );
+
+    return $message;
+  }
 }
 
 ?>

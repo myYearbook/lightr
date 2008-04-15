@@ -42,6 +42,13 @@ class XMPPPresence extends XMPPStanzaObject
    * @var XMPPJID
    */
   public $jid;
+  
+  /**
+   * XMPPJID to whom this was sent
+   *
+   * @var XMPPJID
+   */
+  public $to;
 
   /**
    * Build an XMPPPresence object based on the passed in presence SimpleXMLElement 
@@ -69,7 +76,7 @@ class XMPPPresence extends XMPPStanzaObject
   }
   
   /**
-   * Enter description here...
+   * Class constructor
    *
    * @param XMPPJID $jid
    * @param string $show
@@ -86,6 +93,36 @@ class XMPPPresence extends XMPPStanzaObject
     $this->show = $show;
     $this->status = $status;
   }
+  
+  /**
+   * A function to return the built DOMElement to represent this object
+   *
+   * @param DOMDocument $domObject
+   * @return DOMElement
+   */
+  function buildDOMElement( $domDocument )
+  {
+    $presence = $domDocument->createElement('presence');
+    $presence->setAttribute( 'to', $this->to->getJID() );
+    $presence->setAttribute( 'from', $this->from->getJID() );
+    
+    if ( $this->status )
+    {
+      $status = $domDocument->createElement('status');
+      $status->appendChild( $domDocument->createTextNode( $this->status );
+      $presence->appendChild( $status ); 
+    }
+    
+    if ( $this->show && $this->show !== XMPPPresence::PRESENCE_AVAILABLE )
+    {
+      $show = $domDocument->createElement('show');
+      $show->appendChild( $domDocument->createTextNode( $this->show );
+      $presence->appendChild( $show ); 
+    }
+    
+    return $presence;
+  }
+  
 }
 
 ?>

@@ -426,28 +426,17 @@ final class XMPPClient extends BOSHClient
     // Return our current presence information, unaltered.
     return $this->presence;
   }
-  
+
   /**
-   * Function for sending messages
+   * Routes an XMPPStanzaObject
    *
-   * @param string $to JID of the user to send the message to
-   * @param string $text Message body
-   * @return BOSHResult or BOSHError
+   * @param XMPPStanzaObject $object
    */
-  function messageSend( $to, $text )
+  function route( XMPPStanzaObject $object )
   {
-    $message = $this->domDocument->createElement('message');
-    $message->setAttribute( 'to', $to );
-
-    $body = $this->domDocument->createElement( 'body', $text );
-    $message->appendChild( $body );
-
-    $this->bodyElement->appendChild( $message );
-    $result = $this->execute();
-
-    return $result;
+    
   }
-
+  
   /**
    * Function for handling errors
    *

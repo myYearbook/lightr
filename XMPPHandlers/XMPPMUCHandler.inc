@@ -2,7 +2,7 @@
 
 class XMPPMUCHandler extends XMPPHandlerObject
 {
-  const NS_USER = 'http://jabber.org/protocol/muc#user';
+  const NS_USER = 'http://jabber.org/protocol/muc';
 
   public $xpath = array();
 
@@ -17,7 +17,8 @@ class XMPPMUCHandler extends XMPPHandlerObject
     $this->storageHandler = $storageHandler;
   }
 
-  function process( $index, SimpleXMLElement $node, $direction ) { }
+  function process( $index, SimpleXMLElement $node, $direction ) {
+  }
 
   function join( $room, $password = false )
   {
@@ -27,6 +28,7 @@ class XMPPMUCHandler extends XMPPHandlerObject
     
     $presenceNode = $dom->createElement('presence');
     $presenceNode->setAttribute( 'to', $room );
+    $presenceNode->setAttribute( 'from', 'dallas@devk.it' );
     $xNode = $dom->createElement('x');
     $xNode->setAttribute( 'xmlns', self::NS_USER );
     if ( $password && is_string( $password ) && $password != '' )
@@ -35,6 +37,7 @@ class XMPPMUCHandler extends XMPPHandlerObject
       $passwordNode->appendChild( $dom->createTextNode( $password ) );
       $xNode->appendChild( $passwordNode );
     }
+    
     $presenceNode->appendChild( $xNode );
     $body->appendChild( $presenceNode );
     
