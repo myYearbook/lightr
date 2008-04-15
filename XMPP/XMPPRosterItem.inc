@@ -139,6 +139,18 @@ class XMPPRosterItem extends XMPPStanzaObject
   {
     return $this->name;
   }
+  
+  /**
+   * Don't use this
+   *
+   * @param DOMDocument $domDocument
+   * @return false
+   * @ignore 
+   */
+  function buildDOMElement( $domDocument )
+  {
+    return false; 
+  }
 }
 
 ?>
