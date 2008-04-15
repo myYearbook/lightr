@@ -28,7 +28,6 @@ class XMPPMUCHandler extends XMPPHandlerObject
     
     $presenceNode = $dom->createElement('presence');
     $presenceNode->setAttribute( 'to', $room );
-    $presenceNode->setAttribute( 'from', 'dallas@devk.it' );
     $xNode = $dom->createElement('x');
     $xNode->setAttribute( 'xmlns', self::NS_USER );
     if ( $password && is_string( $password ) && $password != '' )

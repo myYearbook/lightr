@@ -434,7 +434,14 @@ final class XMPPClient extends BOSHClient
    */
   function route( XMPPStanzaObject $object )
   {
+    $result = $object->buildDOMElement( $this->getDomDocument() );
     
+    if ( false === ( $result instanceof DOMElement ) )
+    {
+      throw new Exception( 'Invalid return type from XMPPStanzaObject::buildDOMElement()' ); 
+    }
+    $this->bodyElement->appendChild( $result );
+    $this->execute();
   }
   
   /**
