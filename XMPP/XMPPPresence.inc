@@ -109,14 +109,14 @@ class XMPPPresence extends XMPPStanzaObject
     if ( $this->status )
     {
       $status = $domDocument->createElement('status');
-      $status->appendChild( $domDocument->createTextNode( $this->status );
+      $status->appendChild( $domDocument->createTextNode( $this->status ) );
       $presence->appendChild( $status ); 
     }
     
     if ( $this->show && $this->show !== XMPPPresence::PRESENCE_AVAILABLE )
     {
       $show = $domDocument->createElement('show');
-      $show->appendChild( $domDocument->createTextNode( $this->show );
+      $show->appendChild( $domDocument->createTextNode( $this->show ) );
       $presence->appendChild( $show ); 
     }
     
