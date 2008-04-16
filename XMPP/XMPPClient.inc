@@ -334,7 +334,17 @@ final class XMPPClient extends BOSHClient
   {
     return 'XMPPClient:' . $this->jid->getJID();
   }
-  
+
+  /**
+   * Gets the JID of the user
+   *
+   * @return XMPPJID
+   */
+  function getJID()
+  {
+    return $this->jid;
+  }
+
   /**
    * Disconnect from XMPP Server
    *
@@ -443,7 +453,7 @@ final class XMPPClient extends BOSHClient
     $this->bodyElement->appendChild( $result );
     $this->execute();
   }
-  
+
   /**
    * Function for handling errors
    *
@@ -934,9 +944,18 @@ final class XMPPClient extends BOSHClient
     if ( count( $this->handlers ) > 0 )
     {
       $body->registerXPathNamespace( 'bosh', 'http://jabber.org/protocol/httpbind' );
+
       // Process handlers last
       foreach ( $this->handlers as $handler )
       {
+        if ( is_array( $handler->namespace ) )
+        {
+          foreach( $handler->namespace as $namespace )
+          {
+            $body->registerXPathNamespace( $namespace['alias'], $namespace['namespace'] );
+          }
+        }
+
         foreach ( $handler->xpath as $index => $xpath )
         {
           if ( $direction == $xpath['direction'] || $xpath['direction'] == 2 )

@@ -24,7 +24,14 @@ abstract class XMPPHandlerObject
    * @example array( array( 'xpath' => '//bosh:message', direction => 2 ) )
    */
   public $xpath;
-  
+
+  /**
+   * XML name spaces to register
+   *
+   * @var array
+   */
+  public $namespace;
+
   /**
    * Process a node
    *
