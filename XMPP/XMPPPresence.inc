@@ -35,20 +35,32 @@ class XMPPPresence extends XMPPStanzaObject
    * @var string
    */
   public $show;
-  
+
   /**
-   * XMPPJID for this presence object
+   * @var string
+   */
+  public $type;
+
+  /**
+   * XMPPJID to whom this is coming from
    *
    * @var XMPPJID
    */
-  public $jid;
-  
+  public $from;
+
   /**
    * XMPPJID to whom this was sent
    *
    * @var XMPPJID
    */
   public $to;
+
+  /**
+   * Priority
+   *
+   * @var int
+   */
+  public $priority;
 
   /**
    * Build an XMPPPresence object based on the passed in presence SimpleXMLElement 
@@ -67,14 +79,15 @@ class XMPPPresence extends XMPPStanzaObject
         $show = XMPPPresence::PRESENCE_UNAVAILABLE;
       }
       $status = (string)$sxmlPresence->status;      
-      $jid = XMPPJID::getByString( $sxmlPresence['from'] );
-      $newPresence = new XMPPPresence( $jid, $show, $status ); 
+      $fromJID = XMPPJID::getByString( $sxmlPresence['from'] );
+      $toJID = XMPPJID::getByString( $sxmlPresence['to'] );
+      $newPresence = new XMPPPresence( $fromJID, $toJID, $show, $status ); 
       return $newPresence;
     } else {
       return false;
     }
   }
-  
+
   /**
    * Class constructor
    *
@@ -83,17 +96,15 @@ class XMPPPresence extends XMPPStanzaObject
    * @param string $status
    * @param SimpleXMLElement $sxmlPresence
    */
-  function __construct( $jid, $show = null, $status = null )
+  function __construct( XMPPJID $from = null, XMPPJID $to = null, $show = null, $status = null, $type = null, $priority = null )
   {
-    if ( $show === null )
-    {
-      $show = self::PRESENCE_AVAILABLE; 
-    }
-    $this->jid = $jid;
-    $this->show = $show;
-    $this->status = $status;
+    $this->jid      = $jid;
+    $this->show     = $show;
+    $this->status   = $status;
+    $this->type     = $type;
+    $this->priority = $priority;
   }
-  
+
   /**
    * A function to return the built DOMElement to represent this object
    *
@@ -103,9 +114,22 @@ class XMPPPresence extends XMPPStanzaObject
   function buildDOMElement( $domDocument )
   {
     $presence = $domDocument->createElement('presence');
-    $presence->setAttribute( 'to', $this->to->getJID() );
-    $presence->setAttribute( 'from', $this->from->getJID() );
-    
+
+    if ( $this->to !== null )
+    {
+      $presence->setAttribute( 'to', $this->to->getJID() );
+    }
+
+    if ( $this->from !== null )
+    {
+      $presence->setAttribute( 'from', $this->from->getJID() );
+    }
+
+    if ( $this->type !== null )
+    {
+      $presence->setAttribute( 'type', $this->type );
+    }
+
     if ( $this->status )
     {
       $status = $domDocument->createElement('status');
@@ -119,7 +143,14 @@ class XMPPPresence extends XMPPStanzaObject
       $show->appendChild( $domDocument->createTextNode( $this->show ) );
       $presence->appendChild( $show ); 
     }
-    
+
+    if ( $this->priority !== null )
+    {
+      $priority = intval( $this->priority );
+      $priorityDom = $domDocument->createElement( 'priority', $this->priority );
+      $presence->appendChild( $priorityDom );
+    }
+
     return $presence;
   }
   

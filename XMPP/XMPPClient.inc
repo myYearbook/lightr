@@ -376,53 +376,15 @@ final class XMPPClient extends BOSHClient
    */
   function presenceSend( $to = null, $type = null, $show = null, $status = null, $priority = null )
   {
+    // Create presence object
+    $this->presence = new XMPPPresence( null, $to, $show, $status, $type, $priority );
 
-    // Create presence element
-    $presence = $this->domDocument->createElement( 'presence' );
+    // Return presence xml and append to body
+    $this->bodyElement->appendChild( $this->presence->buildDOMElement( $this->domDocument ) );
 
-    // Set to attribute
-    if ( $to !== null )
-    {
-      $presence->setAttribute( 'to', $to );
-    }
-
-    // Set type attribute
-    if ( $type !== null )
-    {
-      $presence->setAttribute( 'type', $type );
-    }
-
-    // Create status element and give it the $status string
-    if ( $status !== null )
-    {
-      $statusDom = $this->domDocument->createElement( 'status', $status );
-      $presence->appendChild( $statusDom );
-    }
-
-    // Create show element and give it the $show string
-    if ( $show !== null )
-    {
-      $showDom = $this->domDocument->createElement( 'show', $show );
-      $presence->appendChild( $showDom );
-    }
-
-    // Create priority element and give it the $priority integer
-    if ( $priority !== null )
-    {
-      $priority = intval( $priority );
-      $priorityDom = $this->domDocument->createElement( 'priority', $priority );
-      $presence->appendChild( $priorityDom );
-    }
-
-    $this->bodyElement->appendChild( $presence );
-
+    // Execute presence
     $result = $this->execute();
 
-    if ( $to == null )
-    {
-      $this->presence = new XMPPPresence( $this->jid, $show, $status );
-    }
-    
     return $result;
   }
 
@@ -699,7 +661,7 @@ final class XMPPClient extends BOSHClient
       $showNode->appendChild( $this->domDocument->createTextNode( $this->presence->show ) );
       $presence->appendChild( $showNode );
     } else {
-      $this->presence = new XMPPPresence( $this->jid, 'available' );
+      $this->presence = new XMPPPresence( $this->jid, null, 'available' );
     }
     
     $this->bodyElement->appendChild( $presence );

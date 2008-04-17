@@ -125,7 +125,7 @@ class XMPPRosterItem extends XMPPStanzaObject
       {
         $this->presence = XMPPPresence::buildBySimpleXML( $XMPPPresence ); 
       } else {
-        $this->presence = new XMPPPresence( $jid, XMPPPresence::PRESENCE_UNAVAILABLE );
+        $this->presence = new XMPPPresence( $jid, null, XMPPPresence::PRESENCE_UNAVAILABLE );
       }
     }
   }
