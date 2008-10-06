@@ -134,14 +134,14 @@ abstract class BOSHClient
       {
         if ( @$returnSXML->xpath('//stream:features') )
         {
-          $this->sid = (string) $returnSXML['sid'];
-          $this->wait = (int) $returnSXML['wait'];
+          $this->sid = (string)$returnSXML['sid'];
+          $this->wait = (int)$returnSXML['wait'];
           $this->debug( 'Wait', $this->wait );
-          $this->polling = (int) $returnSXML['polling'];
-          $this->inactivity = (int) $returnSXML['inactivity'];
-          $this->requests = (int) $returnSXML['requests'];
-          $this->hold = (int) $returnSXML['hold'];
-          $this->maxpause = (int) $returnSXML['maxpause'];
+          $this->polling = (int)$returnSXML['polling'];
+          $this->inactivity = (int)$returnSXML['inactivity'];
+          $this->requests = (int)$returnSXML['requests'];
+          $this->hold = (int)$returnSXML['hold'];
+          $this->maxpause = (int)$returnSXML['maxpause'];
         }
       } else {
         $this->debug( 'Expecting SimpleXML in ' . __FILE__ . ':' . __LINE__ );
@@ -374,7 +374,7 @@ abstract class BOSHClient
     
     if ( $result->bodySXML['sid'] )
     {
-      $this->sid = $result->bodySXML['sid'];
+      $this->sid = (string)$result->bodySXML['sid'];
     }
 
     // Reset the dom structure
